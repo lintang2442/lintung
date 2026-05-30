@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lintang Nur Fadilah ✦ Pixel World</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --pink: #ff6eb4;
+      --purple: #b06aff;
+      --dark: #1a0a2e;
+      --darker: #0d0618;
+      --card: #2a1045;
+      --text: #f0d6ff;
+      --accent: #ffdd57;
+      --green: #57ffb8;
+      --blue: #57c8ff;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: var(--darker);
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      overflow-x: hidden;
+      cursor: none;
+    }
+    /* SCANLINES */
+    body::after {
+      content:'';
+      position:fixed;
+      inset:0;
+      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
+      pointer-events:none;
+      z-index:9999;
+    }
+    /* CUSTOM CURSOR */
+    #cursor {
+      position:fixed;
+      width:16px; height:16px;
+      background: var(--pink);
+      pointer-events:none;
+      z-index:99999;
+      image-rendering:pixelated;
+      clip-path: polygon(0 0,100% 0,100% 60%,60% 60%,60% 100%,0 100%);
+      transform: translate(-2px,-2px);
+      transition: background 0.1s;
+    }
+    /* CLICK PARTICLES */
+    .particle {
+      position:fixed;
+      pointer-events:none;
+      z-index:99998;
+      font-size:18px;
+      animation: particle-fly 0.8s ease-out forwards;
+    }
+    @keyframes particle-fly {
+      0%   { opacity:1; transform:translate(0,0) scale(1); }
+      100% { opacity:0; transform:translate(var(--dx),var(--dy)) scale(0.3); }
+    }
+    /* STARS */
+    #stars-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+    .wrapper { position:relative; z-index:1; }
+    /* NAV */
+    nav {
+      position:fixed; top:0; left:0; right:0;
+      background: rgba(13,6,24,0.92);
+      border-bottom: 3px solid var(--purple);
+      display:flex; justify-content:center; gap:6px;
+      padding:10px 16px; z-index:1000; flex-wrap:wrap;
+    }
+    nav a {
+      font-family:'Press Start 2P',monospace;
+      font-size:8px; color:var(--text);
+      text-decoration:none; padding:6px 10px;
+      border:2px solid transparent;
+      transition: all 0.15s;
+    }
+    nav a:hover { border-color:var(--pink); color:var(--pink); }
+    /* HEADER */
+    header {
+      text-align:center;
+      padding: 100px 20px 30px;
+      background: linear-gradient(180deg,#1a0a2e 0%,#0d0618 100%);
+      border-bottom: 4px solid var(--pink);
+    }
+    .pixel-title {
+      font-family:'Press Start 2P',monospace;
+      font-size:clamp(13px,3vw,22px);
+      color:var(--pink);
+      text-shadow: 3px 3px 0 var(--purple), 6px 6px 0 rgba(176,106,255,0.3);
+      line-height:1.7;
+      animation: flicker 4s infinite;
+    }
+    .pixel-subtitle {
+      font-family:'Press Start 2P',monospace;
+      font-size:clamp(7px,1.5vw,10px);
+      color:var(--accent); margin-top:10px;
+    }
+    @keyframes flicker {
+      0%,94%,100%{opacity:1} 95%{opacity:0.6} 97%{opacity:0.9} 99%{opacity:0.5}
+    }
+    .pixel-icons { display:flex; justify-content:center; gap:20px; padding:18px; flex-wrap:wrap; }
+    .pixel-icon { font-size:38px; animation:bounce 1.5s infinite alternate; filter:drop-shadow(0 0 6px var(--pink)); }
+    .pixel-icon:nth-child(2){animation-delay:.2s}
+    .pixel-icon:nth-child(3){animation-delay:.4s}
+    .pixel-icon:nth-child(4){animation-delay:.6s}
+    .pixel-icon:nth-child(5){animation-delay:.8s}
+    @keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-8px)} }
+    /* MAIN */
+    main { max-width:920px; margin:0 auto; padding:30px 20px; display:flex; flex-direction:column; gap:30px; }
+    /* CARD */
+    .card {
+      background:var(--card);
+      border:3px solid var(--purple);
+      padding:24px; position:relative;
+    }
+    .card::before,.card::after { content:'▪'; position:absolute; color:var(--pink); font-size:10px; }
+    .card::before{top:6px;left:8px} .card::after{bottom:6px;right:8px}
+    .card-title {
+      font-family:'Press Start 2P',monospace;
+      font-size:clamp(8px,1.8vw,12px);
+      color:var(--accent); margin-bottom:18px;
+      padding-bottom:10px; border-bottom:2px dashed var(--purple);
+      display:flex; align-items:center; gap:10px;
+    }
+    /* PROFILE */
+    .profile-grid { display:grid; grid-template-columns:auto 1fr; gap:24px; align-items:start; }
+    .photo-frame {
+      width:160px; height:160px;
+      border:4px solid var(--pink);
+      overflow:hidden; flex-shrink:0;
+      box-shadow: 0 0 20px rgba(255,110,180,0.4);
+    }
+    .photo-frame img { width:100%; height:100%; object-fit:cover; }
+    .profile-info p { margin-bottom:12px; line-height:1.7; font-size:21px; text-align:justify; }
+    .label { color:var(--pink); font-family:'Press Start 2P',monospace; font-size:8px; display:block; margin-bottom:2px; }
+    /* HOBI */
+    .hobi-list { display:flex; flex-wrap:wrap; gap:12px; }
+    .hobi-badge {
+      background:var(--dark); border:2px solid var(--green);
+      color:var(--green); padding:6px 14px; font-size:18px;
+      display:flex; align-items:center; gap:6px; transition:all 0.2s;
+    }
+    .hobi-badge:hover { background:var(--green); color:var(--dark); }
+    /* SKILL BARS */
+    .skill-item { margin-bottom:16px; }
+    .skill-label { font-family:'Press Start 2P',monospace; font-size:8px; color:var(--text); margin-bottom:6px; display:flex; justify-content:space-between; }
+    .skill-bar-bg { background:var(--dark); border:2px solid var(--purple); height:20px; position:relative; overflow:hidden; }
+    .skill-bar-fill {
+      height:100%; background: linear-gradient(90deg,var(--pink),var(--purple));
+      width:0%; transition:width 1.5s ease;
+      position:relative;
+    }
+    .skill-bar-fill::after {
+      content:''; position:absolute; right:0; top:0; bottom:0; width:4px;
+      background:var(--accent); animation:blink 0.5s step-end infinite;
+    }
+    @keyframes blink { 50%{opacity:0} }
+    /* ABOUT */
+    .about-text { line-height:1.9; font-size:22px; color:var(--text); text-align:justify; }
+    .about-text span { color:var(--pink); }
+    /* TIMELINE */
+    .timeline { position:relative; padding-left:30px; }
+    .timeline::before { content:''; position:absolute; left:8px; top:0; bottom:0; width:3px; background:var(--purple); }
+    .tl-item { position:relative; margin-bottom:24px; }
+    .tl-dot {
+      position:absolute; left:-26px; top:4px;
+      width:12px; height:12px; background:var(--pink);
+      border:2px solid var(--accent);
+    }
+    .tl-year { font-family:'Press Start 2P',monospace; font-size:8px; color:var(--accent); margin-bottom:4px; }
+    .tl-desc { font-size:20px; color:var(--text); line-height:1.6; text-align:justify; }
+    /* MUSIC */
+    .music-list { display:flex; flex-direction:column; gap:16px; }
+    .music-item {
+      background:var(--dark); border:2px solid var(--pink);
+      padding:16px; display:flex; align-items:center; gap:16px;
+      transition: all 0.2s;
+    }
+    .music-item:hover { border-color:var(--accent); transform:translateX(4px); }
+    .music-icon { font-size:34px; flex-shrink:0; animation:spin-slow 4s linear infinite; }
+    @keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .music-info { flex:1; }
+    .music-title { font-family:'Press Start 2P',monospace; font-size:9px; color:var(--accent); margin-bottom:4px; }
+    .music-artist { color:var(--pink); font-size:18px; }
+    .music-link {
+      background:var(--pink); color:var(--dark); border:none;
+      padding:8px 12px; font-family:'Press Start 2P',monospace;
+      font-size:8px; cursor:pointer; text-decoration:none;
+      display:inline-block; transition:background 0.2s; flex-shrink:0;
+    }
+    .music-link:hover { background:var(--accent); }
+    /* GALLERY */
+    .gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; }
+    .gallery-item {
+      border:3px solid var(--purple); overflow:hidden;
+      aspect-ratio:1; background:var(--dark);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:border-color 0.2s;
+      position:relative;
+    }
+    .gallery-item:hover { border-color:var(--pink); }
+    .gallery-item img { width:100%; height:100%; object-fit:cover; }
+    .gallery-add {
+      flex-direction:column; gap:6px;
+      font-size:14px; color:var(--purple);
+      font-family:'Press Start 2P',monospace;
+    }
+    .gallery-add span { font-size:32px; }
+    /* SOCIAL */
+    .social-list { display:flex; flex-wrap:wrap; gap:14px; }
+    .social-btn {
+      background:var(--dark); border:2px solid var(--blue);
+      color:var(--blue); padding:10px 18px;
+      font-family:'Press Start 2P',monospace; font-size:8px;
+      text-decoration:none; display:flex; align-items:center; gap:8px;
+      transition:all 0.2s;
+    }
+    .social-btn:hover { background:var(--blue); color:var(--dark); }
+    /* GUESTBOOK */
+    .guestbook-form { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+    .gb-input, .gb-textarea {
+      background:var(--dark); border:2px solid var(--purple);
+      color:var(--text); font-family:'VT323',monospace; font-size:20px;
+      padding:10px; outline:none; resize:none;
+      transition:border-color 0.2s;
+    }
+    .gb-input:focus, .gb-textarea:focus { border-color:var(--pink); }
+    .gb-btn {
+      background:var(--pink); color:var(--dark); border:none;
+      padding:10px 20px; font-family:'Press Start 2P',monospace;
+      font-size:9px; cursor:pointer; align-self:flex-start;
+      transition:background 0.2s;
+    }
+    .gb-btn:hover { background:var(--accent); }
+    .gb-messages { display:flex; flex-direction:column; gap:12px; }
+    .gb-msg {
+      background:var(--dark); border:2px solid var(--purple);
+      padding:12px; animation:fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .gb-msg-name { font-family:'Press Start 2P',monospace; font-size:8px; color:var(--accent); margin-bottom:4px; }
+    .gb-msg-text { font-size:20px; color:var(--text); line-height:1.6; text-align:justify; }
+    .gb-msg-time { font-size:14px; color:var(--purple); margin-top:4px; }
+    /* MINI GAME */
+    #game-area {
+      background:var(--dark); border:3px solid var(--green);
+      padding:20px; text-align:center;
+    }
+    #game-question { font-family:'Press Start 2P',monospace; font-size:10px; color:var(--text); margin-bottom:16px; line-height:1.8; }
+    .game-options { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:16px; }
+    .game-opt {
+      background:var(--dark); border:2px solid var(--purple);
+      color:var(--text); padding:10px 16px;
+      font-family:'Press Start 2P',monospace; font-size:8px;
+      cursor:pointer; transition:all 0.15s;
+    }
+    .game-opt:hover { border-color:var(--pink); color:var(--pink); }
+    .game-opt.correct { border-color:var(--green); color:var(--green); background:rgba(87,255,184,0.1); }
+    .game-opt.wrong { border-color:#ff4444; color:#ff4444; background:rgba(255,68,68,0.1); }
+    #game-score { font-family:'Press Start 2P',monospace; font-size:10px; color:var(--accent); }
+    #game-feedback { font-size:22px; min-height:28px; color:var(--green); margin-bottom:8px; }
+    #game-next {
+      background:var(--purple); color:var(--text); border:none;
+      padding:10px 20px; font-family:'Press Start 2P',monospace;
+      font-size:8px; cursor:pointer; display:none; margin-top:10px;
+    }
+    /* PIXEL ART ROW */
+    .pixel-art-row { display:flex; justify-content:center; gap:30px; padding:10px 0; flex-wrap:wrap; }
+    .pixel-art { image-rendering:pixelated; width:64px; height:64px; }
+    /* FOOTER */
+    footer {
+      text-align:center; padding:24px;
+      border-top:4px solid var(--purple);
+      font-family:'Press Start 2P',monospace;
+      font-size:8px; color:var(--purple); line-height:2.2;
+    }
+    footer span { color:var(--pink); }
+    /* GALLERY LIGHTBOX */
+    #lightbox {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.92); z-index:99990;
+      align-items:center; justify-content:center;
+    }
+    #lightbox.active { display:flex; }
+    #lightbox img { max-width:90vw; max-height:85vh; border:4px solid var(--pink); object-fit:contain; }
+    #lightbox-close {
+      position:absolute; top:16px; right:20px;
+      font-family:'Press Start 2P',monospace; font-size:14px;
+      color:var(--pink); cursor:pointer; background:none; border:none;
+    }
+
+    /* RESPONSIVE — MOBILE FIRST */
+    @media(max-width:600px) {
+      /* nav scroll horizontal di HP */
+      nav {
+        justify-content:flex-start;
+        overflow-x:auto; flex-wrap:nowrap;
+        gap:0; padding:8px 10px;
+        -webkit-overflow-scrolling:touch;
+        scrollbar-width:none;
+      }
+      nav::-webkit-scrollbar { display:none; }
+      nav a { padding:8px 10px; white-space:nowrap; font-size:7px; }
+
+      /* header */
+      header { padding:80px 14px 20px; }
+      .pixel-title { font-size:12px; }
+      .pixel-subtitle { font-size:7px; }
+      .pixel-icons { gap:12px; padding:12px; }
+      .pixel-icon { font-size:28px; }
+
+      /* main padding */
+      main { padding:16px 12px; gap:16px; }
+
+      /* card */
+      .card { padding:16px 14px; }
+      .card-title { font-size:8px; margin-bottom:12px; }
+
+      /* profile — stack vertikal */
+      .profile-grid { grid-template-columns:1fr; gap:16px; }
+      .photo-frame { width:130px; height:130px; margin:0 auto; }
+      .profile-info p { font-size:18px; }
+      .label { font-size:7px; }
+
+      /* hobi badge */
+      .hobi-badge { font-size:16px; padding:5px 10px; }
+
+      /* skill */
+      .skill-label { font-size:7px; }
+      .skill-bar-bg { height:16px; }
+
+      /* about */
+      .about-text { font-size:19px; }
+
+      /* timeline */
+      .tl-year { font-size:7px; }
+      .tl-desc { font-size:18px; }
+
+      /* music */
+      .music-item { padding:12px; gap:10px; }
+      .music-icon { font-size:26px; }
+      .music-title { font-size:8px; }
+      .music-artist { font-size:16px; }
+      .music-link { font-size:7px; padding:7px 10px; }
+
+      /* gallery — 2 kolom di HP */
+      .gallery-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+
+      /* social */
+      .social-list { gap:10px; }
+      .social-btn { font-size:7px; padding:9px 12px; width:100%; justify-content:center; }
+
+      /* game */
+      #game-question { font-size:8px; }
+      .game-opt { font-size:7px; padding:8px 10px; }
+      #game-score { font-size:8px; }
+
+      /* guestbook */
+      .gb-input, .gb-textarea { font-size:18px; }
+      .gb-btn { font-size:8px; width:100%; text-align:center; }
+      .gb-msg-name { font-size:7px; }
+      .gb-msg-text { font-size:18px; }
+
+      /* pixel art deco */
+      .pixel-art { width:44px; height:44px; }
+      .pixel-art-row { gap:16px; }
+
+      /* footer */
+      footer { font-size:7px; padding:18px 12px; }
+    }
+
+    @media(max-width:380px) {
+      .pixel-title { font-size:10px; }
+      nav a { font-size:6px; padding:7px 8px; }
+      .gallery-grid { grid-template-columns:repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+<canvas id="stars-canvas"></canvas>
+<div id="cursor"></div>
+<div class="wrapper">
+
+<!-- NAV -->
+<nav>
+  <a href="#profile">👾 PROFILE</a>
+  <a href="#about">📖 ABOUT</a>
+  <a href="#skills">🎯 SKILLS</a>
+  <a href="#timeline">📅 TIMELINE</a>
+  <a href="#music">🎵 MUSIC</a>
+  <a href="#gallery">🖼️ GALLERY</a>
+  <a href="#social">📱 SOCIAL</a>
+  <a href="#game">🎮 GAME</a>
+  <a href="#guestbook">💬 GUESTBOOK</a>
+</nav>
+
+<!-- HEADER -->
+<header>
+  <div class="pixel-title">✦ LINTANG NUR FADILAH ✦</div>
+  <div class="pixel-subtitle">&lt;아름다운 별&gt;</div>
+  <div class="pixel-icons">
+    <span class="pixel-icon">🎸</span>
+    <span class="pixel-icon">🎧</span>
+    <span class="pixel-icon">📼</span>
+    <span class="pixel-icon">🎵</span>
+    <span class="pixel-icon">💻</span>
+  </div>
+</header>
+
+<main>
+
+<!-- PROFILE -->
+<section id="profile" class="card">
+  <div class="card-title">▶ PROFILE</div>
+  <div class="profile-grid">
+    <div class="photo-frame">
+      <img src="foto.JPG" alt="Foto Lintang"/>
+    </div>
+    <div class="profile-info">
+      <p><span class="label">// NAMA</span>Lintang Nur Fadilah</p>
+      <p><span class="label">// STATUS</span>Guitarist · Music Lover · Coder in Progress 🌱</p>
+      <p><span class="label">// QUOTE</span>"Life is better with music &amp; code."</p>
+      <div class="hobi-list" style="margin-top:8px">
+        <div class="hobi-badge">🎸 Main Gitar</div>
+        <div class="hobi-badge">🎧 Dengerin Musik</div>
+        <div class="hobi-badge">💻 Ngoding</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="card">
+  <div class="card-title">📖 ABOUT ME</div>
+  <p class="about-text">
+    Halo! Gue <span>Lintang Nur Fadilah</span>, anak yang suka banget sama musik dan lagi belajar dunia coding. 🎸<br><br>
+    Gue mulai main gitar karena ngerasa musik itu bisa ngungkapin perasaan yang susah diucapin kata-kata. Dari situ gue juga jadi suka dengerin berbagai genre — dari indie folk kayak <span>Wave to Earth</span> sampe pop vibes-nya <span>Bruno Mars</span>.<br><br>
+    Belakangan ini gue mulai nyemplung ke dunia <span>coding</span> dan ternyata seru banget! Ngebangun sesuatu dari nol, ngeliat hasilnya di browser — rasanya mirip waktu pertama kali bisa mainin lagu utuh di gitar. 🚀
+  </p>
+</section>
+
+<!-- SKILLS -->
+<section id="skills" class="card">
+  <div class="card-title">🎯 SKILL LEVEL</div>
+  <div class="skill-item">
+    <div class="skill-label"><span>🎸 MAIN GITAR</span><span>75%</span></div>
+    <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="75"></div></div>
+  </div>
+  <div class="skill-item">
+    <div class="skill-label"><span>🎧 MUSIC TASTE</span><span>88%</span></div>
+    <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="88"></div></div>
+  </div>
+  <div class="skill-item">
+    <div class="skill-label"><span>💻 CODING (HTML/CSS)</span><span>40%</span></div>
+    <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="40"></div></div>
+  </div>
+  <div class="skill-item">
+    <div class="skill-label"><span>😎 VIBES</span><span>100%</span></div>
+    <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="100"></div></div>
+  </div>
+</section>
+
+</main>
+
+<!-- TIMELINE (outside main for full width feel, but inside wrapper) -->
+<main style="max-width:920px;margin:0 auto;padding:0 20px;display:flex;flex-direction:column;gap:30px;">
+
+<!-- TIMELINE -->
+<section id="timeline" class="card">
+  <div class="card-title">📅 TIMELINE</div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-year">2023</div>
+      <div class="tl-desc">🎵 Nemu Wave to Earth & jatuh cinta sama indie music</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-year">2025</div>
+      <div class="tl-desc">🎸 Mulai belajar main gitar — chord pertama: C, G, Am, F, A</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-year">2025</div>
+      <div class="tl-desc">💻 Mulai belajar coding — HTML pertama berhasil tampil di browser!</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-year">2026</div>
+      <div class="tl-desc">🚀 Makin serius ngoding, bikin web personal pertama</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-year">2026 →</div>
+      <div class="tl-desc">🌟 And now gue bisa bikin web tentang diri gue sendiri dibantu temen baik gue, dan gue berharap semoga gue kedepan nya bisa jadi pribadi yang lebih baik.</div>
+    </div>
+  </div>
+</section>
+
+<!-- MUSIC -->
+<section id="music" class="card">
+  <div class="card-title">📼 LAGU FAVORIT</div>
+  <div class="music-list">
+
+    <!-- Love - Wave to Earth -->
+    <div class="music-item">
+      <span class="music-icon">💿</span>
+      <div class="music-info">
+        <div class="music-title">LOVE</div>
+        <div class="music-artist">Wave to Earth</div>
+      </div>
+    </div>
+    <iframe style="border-radius:0; border:2px solid var(--purple); margin-top:-8px;"
+      src="https://open.spotify.com/embed/track/5mtTAScDytxMMqZj14NmlN?utm_source=generator&theme=0"
+      width="100%" height="80" frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="lazy">
+    </iframe>
+
+    <!-- Risk It All - Bruno Mars -->
+    <div class="music-item" style="margin-top:16px;">
+      <span class="music-icon">🎵</span>
+      <div class="music-info">
+        <div class="music-title">RISK IT ALL</div>
+        <div class="music-artist">Bruno Mars</div>
+      </div>
+    </div>
+    <iframe style="border-radius:0; border:2px solid var(--purple); margin-top:-8px;"
+      src="https://open.spotify.com/embed/track/5y2ijHECwFYWqcAHKTZgzD?utm_source=generator&theme=0"
+      width="100%" height="80" frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="lazy">
+    </iframe>
+
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="card">
+  <div class="card-title">🖼️ GALLERY LINTUNG</div>
+  <div class="gallery-grid" id="gallery-grid">
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto.JPG" alt="Lintang"/>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto2.JPG" alt="Lintang 2"/>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto3.JPG" alt="Lintang 3"/>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto4.JPG" alt="Lintang 4"/>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto5.JPG" alt="Lintang 5"/>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto6.JPG" alt="Lintang 6"/>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto7.JPG" alt="Lintang 6"/>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto8.JPG" alt="Lintang 6"/>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto9.JPG" alt="Lintang 6"/>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <img src="foto10.JPG" alt="Lintang 6"/>
+    </div>
+    
+  </div>
+  <input type="file" id="gallery-input" accept="image/*" multiple style="display:none" onchange="addGalleryPhotos(event)"/>
+</section>
+
+<!-- SOCIAL -->
+<section id="social" class="card">
+  <div class="card-title">📱 FIND ME ON</div>
+  <div class="social-list">
+    <a class="social-btn" href="https://instagram.com/lintangnurfadilahh" target="_blank">📸 INSTAGRAM</a>
+    <a class="social-btn" href="https://github.com/lintang2442" target="_blank">🐙 GITHUB</a>
+    <a class="social-btn" href="https://tiktok.com/@xiweeweeeeee" target="_blank">🎵 TIKTOK</a>
+    <a class="social-btn" href="https://open.spotify.com/user/wolowolooo" target="_blank">🎧 SPOTIFY</a>
+  </div>
+</section>
+
+</main>
+
+<main style="max-width:920px;margin:0 auto;padding:0 20px 30px;display:flex;flex-direction:column;gap:30px;">
+
+<!-- MINI GAME -->
+<section id="game" class="card">
+  <div class="card-title">🎮 MINI GAME — TEBAK LAGU</div>
+  <div id="game-area">
+    <div id="game-score">SCORE: <span id="score-val">0</span> | SOAL: <span id="q-num">1</span>/5</div>
+    <br>
+    <div id="game-question">Loading...</div>
+    <div class="game-options" id="game-options"></div>
+    <div id="game-feedback"></div>
+    <button id="game-next" onclick="nextQuestion()">NEXT ▶</button>
+  </div>
+</section>
+
+<!-- GUESTBOOK -->
+<section id="guestbook" class="card">
+  <div class="card-title">💬 GUESTBOOK</div>
+  <div id="gb-success" style="display:none; background:var(--dark); border:2px solid var(--green); color:var(--green); padding:14px; margin-bottom:16px; font-family:'Press Start 2P',monospace; font-size:9px; line-height:1.8;">
+    ✅ PESAN TERKIRIM!<br><span style="color:var(--text);font-family:'VT323',monospace;font-size:18px;">Makasih udah ninggalin pesan! 💜</span>
+  </div>
+  <form class="guestbook-form" id="gb-form"
+        action="https://formspree.io/f/mykvvanq"
+        method="POST"
+        onsubmit="handleGuestbook(event)">
+    <input class="gb-input" id="gb-name" name="nama" placeholder="Nama kamu..." maxlength="30" required/>
+    <textarea class="gb-textarea" id="gb-msg" name="pesan" placeholder="Tinggalin pesan buat Lintang..." rows="3" maxlength="200" required></textarea>
+    <input type="hidden" name="_subject" value="Pesan Guestbook dari Web Lintang "/>
+    <button class="gb-btn" type="submit">KIRIM PESAN ▶</button>
+  </form>
+  <div class="gb-messages" id="gb-messages"></div>
+</section>
+
+<!-- PIXEL ART DECO -->
+<div class="pixel-art-row">
+  <svg class="pixel-art" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="0" width="4" height="1" fill="#b06aff"/>
+    <rect x="5" y="1" width="6" height="1" fill="#b06aff"/>
+    <rect x="5" y="2" width="6" height="1" fill="#ff6eb4"/>
+    <rect x="6" y="3" width="4" height="1" fill="#ff6eb4"/>
+    <rect x="7" y="4" width="2" height="3" fill="#ffdd57"/>
+    <rect x="5" y="7" width="6" height="5" fill="#ff6eb4"/>
+    <rect x="4" y="8" width="8" height="3" fill="#ff6eb4"/>
+    <rect x="5" y="11" width="6" height="2" fill="#b06aff"/>
+    <rect x="7" y="13" width="2" height="3" fill="#ffdd57"/>
+    <rect x="7" y="9" width="2" height="1" fill="#1a0a2e"/>
+  </svg>
+  <svg class="pixel-art" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="3" width="14" height="10" fill="#b06aff"/>
+    <rect x="2" y="4" width="12" height="8" fill="#1a0a2e"/>
+    <rect x="3" y="5" width="4" height="4" fill="#ff6eb4"/>
+    <rect x="9" y="5" width="4" height="4" fill="#ff6eb4"/>
+    <rect x="7" y="6" width="2" height="2" fill="#ffdd57"/>
+    <rect x="3" y="10" width="10" height="1" fill="#b06aff"/>
+  </svg>
+  <svg class="pixel-art" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="4" width="10" height="2" fill="#b06aff"/>
+    <rect x="2" y="6" width="2" height="1" fill="#b06aff"/>
+    <rect x="12" y="6" width="2" height="1" fill="#b06aff"/>
+    <rect x="1" y="7" width="3" height="4" fill="#ff6eb4"/>
+    <rect x="12" y="7" width="3" height="4" fill="#ff6eb4"/>
+    <rect x="3" y="12" width="2" height="1" fill="#ffdd57"/>
+    <rect x="11" y="12" width="2" height="1" fill="#ffdd57"/>
+  </svg>
+  <svg class="pixel-art" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <rect x="5" y="2" width="7" height="2" fill="#57ffb8"/>
+    <rect x="10" y="4" width="2" height="5" fill="#57ffb8"/>
+    <rect x="5" y="4" width="2" height="5" fill="#57ffb8"/>
+    <rect x="3" y="9" width="4" height="3" fill="#57ffb8"/>
+    <rect x="8" y="9" width="4" height="3" fill="#57ffb8"/>
+    <rect x="2" y="10" width="6" height="2" fill="#57ffb8"/>
+    <rect x="7" y="10" width="6" height="2" fill="#57ffb8"/>
+  </svg>
+</div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div>MADE WITH <span>♥</span> BY LINTANG NUR FADILAH</div>
+  <div>© 2026 · <span>PIXEL WORLD TUNG</span> · ALL RIGHTS RESERVED</div>
+  <div style="margin-top:6px;color:var(--green)">[ KEEP PLAYING · KEEP CODING · KEEP STRUMMING ]</div>
+</footer>
+
+</div><!-- end wrapper -->
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕ CLOSE</button>
+  <img id="lightbox-img" src="" alt=""/>
+</div>
+
+<script>
+// ── CUSTOM CURSOR ──
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
+
+// ── CLICK PARTICLES ──
+const emojis = ['🎵','✨','🎸','🤍','⭐','🎶','💫','🌟'];
+document.addEventListener('click', e => {
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const angle = (Math.PI * 2 / 6) * i;
+    const dist  = 50 + Math.random() * 40;
+    p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+    p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+    p.style.left = e.clientX + 'px';
+    p.style.top  = e.clientY + 'px';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 800);
+  }
+});
+
+// ── STARS CANVAS ──
+const canvas = document.getElementById('stars-canvas');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+function initStars() {
+  stars = [];
+  for (let i = 0; i < 120; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() < 0.3 ? 2 : 1,
+      speed: 0.1 + Math.random() * 0.3,
+      opacity: Math.random()
+    });
+  }
+}
+function drawStars() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    s.opacity += (Math.random() - 0.5) * 0.05;
+    s.opacity  = Math.max(0.1, Math.min(1, s.opacity));
+    s.y += s.speed;
+    if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
+    ctx.fillStyle = `rgba(255,255,255,${s.opacity})`;
+    ctx.fillRect(Math.floor(s.x), Math.floor(s.y), s.r, s.r);
+  });
+  requestAnimationFrame(drawStars);
+}
+resizeCanvas(); initStars(); drawStars();
+window.addEventListener('resize', () => { resizeCanvas(); initStars(); });
+
+// ── SKILL BARS ──
+function animateSkills() {
+  document.querySelectorAll('.skill-bar-fill').forEach(bar => {
+    const w = bar.dataset.width;
+    bar.style.width = w + '%';
+  });
+}
+const skillObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) animateSkills(); });
+}, { threshold: 0.3 });
+const skillSection = document.getElementById('skills');
+if (skillSection) skillObserver.observe(skillSection);
+
+// ── GALLERY ──
+function openLightbox(item) {
+  const img = item.querySelector('img');
+  if (!img) return;
+  document.getElementById('lightbox-img').src = img.src;
+  document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+}
+function addGalleryPhotos(event) {
+  const files = Array.from(event.target.files);
+  const grid  = document.getElementById('gallery-grid');
+  const addBtn = grid.querySelector('.gallery-add');
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const item = document.createElement('div');
+      item.className = 'gallery-item';
+      item.setAttribute('onclick', 'openLightbox(this)');
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.alt = 'Gallery';
+      item.appendChild(img);
+      grid.insertBefore(item, addBtn);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ── GUESTBOOK ──
+function loadGuestbook() {
+  const msgs = JSON.parse(localStorage.getItem('lintang_gb') || '[]');
+  const container = document.getElementById('gb-messages');
+  container.innerHTML = '';
+  msgs.slice().reverse().forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'gb-msg';
+    div.innerHTML = `<div class="gb-msg-name">▶ ${m.name}</div>
+      <div class="gb-msg-text">${m.text}</div>
+      <div class="gb-msg-time">${m.time}</div>`;
+    container.appendChild(div);
+  });
+}
+async function handleGuestbook(event) {
+  event.preventDefault();
+  const form = document.getElementById('gb-form');
+  const btn  = form.querySelector('.gb-btn');
+  btn.textContent = 'MENGIRIM...';
+  btn.disabled = true;
+  try {
+    const data = new FormData(form);
+    const res  = await fetch(form.action, {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      document.getElementById('gb-success').style.display = 'block';
+      form.reset();
+    } else {
+      alert('Gagal kirim pesan, coba lagi ya!');
+    }
+  } catch(e) {
+    alert('Gagal kirim pesan, coba lagi ya!');
+  }
+  btn.textContent = 'KIRIM PESAN ▶';
+  btn.disabled = false;
+}
+loadGuestbook();
+
+// ── MINI GAME ──
+const questions = [
+  { q:'Siapa artis yang nyanyi lagu "LOVE"?', opts:['Bruno Mars','Wave to Earth','The Weeknd','Coldplay'], ans:1 },
+  { q:'Lagu "Risk It All" dinyanyiin sama siapa?', opts:['Ed Sheeran','Wave to Earth','Bruno Mars','Harry Styles'], ans:2 },
+  { q:'Apa hobi Lintang selain dengerin musik?', opts:['Masak','Main Gitar','Melukis','Berenang'], ans:1 },
+  { q:'Genre musik Wave to Earth itu apa?', opts:['Metal','K-Pop','Indie/Lo-fi','Classical'], ans:2 },
+  { q:'Lintang lagi belajar apa belakangan ini?', opts:['Memasak','Coding','Menari','Melukis'], ans:1 },
+];
+let currentQ = 0, score = 0, answered = false;
+function loadQuestion() {
+  if (currentQ >= questions.length) { endGame(); return; }
+  answered = false;
+  const q = questions[currentQ];
+  document.getElementById('game-question').textContent = q.q;
+  document.getElementById('game-feedback').textContent = '';
+  document.getElementById('game-next').style.display = 'none';
+  document.getElementById('q-num').textContent = currentQ + 1;
+  const opts = document.getElementById('game-options');
+  opts.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'game-opt';
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(i, btn);
+    opts.appendChild(btn);
+  });
+}
+function checkAnswer(idx, btn) {
+  if (answered) return;
+  answered = true;
+  const q = questions[currentQ];
+  const allBtns = document.querySelectorAll('.game-opt');
+  allBtns[q.ans].classList.add('correct');
+  if (idx === q.ans) {
+    score++;
+    document.getElementById('game-feedback').textContent = '✅ BENER BANGET!';
+    document.getElementById('score-val').textContent = score;
+  } else {
+    btn.classList.add('wrong');
+    document.getElementById('game-feedback').textContent = '❌ SALAH! Jawaban: ' + q.opts[q.ans];
+  }
+  document.getElementById('game-next').style.display = 'inline-block';
+}
+function nextQuestion() {
+  currentQ++;
+  loadQuestion();
+}
+function endGame() {
+  document.getElementById('game-question').textContent = '🎉 GAME OVER!';
+  document.getElementById('game-options').innerHTML = '';
+  document.getElementById('game-feedback').textContent = `SKOR KAMU: ${score}/5 — ${score===5?'PERFECT! 🌟':score>=3?'BAGUS! 👍':'Coba lagi ya! 💪'}`;
+  document.getElementById('game-next').textContent = '🔄 MAIN LAGI';
+  document.getElementById('game-next').style.display = 'inline-block';
+  document.getElementById('game-next').onclick = () => { currentQ=0; score=0; document.getElementById('score-val').textContent=0; document.getElementById('game-next').textContent='NEXT ▶'; document.getElementById('game-next').onclick=nextQuestion; loadQuestion(); };
+}
+loadQuestion();
+</script>
+</body>
+</html>
